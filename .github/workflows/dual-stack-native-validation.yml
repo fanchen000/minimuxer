@@ -1,0 +1,38 @@
+name: Dual-stack utun native validation
+
+on:
+  push:
+    branches:
+      - ci/dual-stack-utun-native-validation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-tests:
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Identify committed source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          git diff --cached --exit-code
+          git rev-parse HEAD
+          xcodebuild -version
+      - name: Syntax-check reviewed Swift source and regression test
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcrun swiftc -frontend -parse Sources/Services/DeviceConnectionManager.swift
+          xcrun swiftc -frontend -parse Tests/EMProxyTests.swift
+      - name: Run focused native regression test
+        shell: bash
+        run: |
+          set -euo pipefail
+          swift test --filter testDualStackUtunRemainsEligibleForIPv4PeerDiscovery
