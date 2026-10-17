@@ -190,8 +190,10 @@ actor DeviceConnectionManager {
         let tunnels = interfaces
             .compactMap { $0 as? TunnelNetInfo }
             .filter { 
-                 $0.tunnelType == .utun && 
-                !$0.interfaceAddresses.v4.isEmpty && $0.interfaceAddresses.v6.isEmpty 
+                 $0.tunnelType == .utun &&
+                // COMBINED_DUAL_STACK_UTUN_V1: an IPv4 utun may also carry IPv6.
+                // A reachable IPv4 peer and CoreDevice handshake remain required.
+                !$0.interfaceAddresses.v4.isEmpty
             }
             .sorted { $0.name < $1.name }
         guard !tunnels.isEmpty else { return (nil, nil, false) }
