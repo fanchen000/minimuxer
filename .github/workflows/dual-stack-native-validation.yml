@@ -10,6 +10,21 @@ permissions:
   contents: read
 
 jobs:
+  source-filter-fixture:
+    runs-on: macos-15
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Compile and run source-derived production filter
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 ci/dual_stack_source_fixture.py --output "$RUNNER_TEMP/dualstack.swift"
+          xcrun swiftc "$RUNNER_TEMP/dualstack.swift" -o "$RUNNER_TEMP/dualstack"
+          "$RUNNER_TEMP/dualstack"
+
   native-tests:
     runs-on: macos-15
     timeout-minutes: 35
